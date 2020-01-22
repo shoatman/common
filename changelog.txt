@@ -1,0 +1,175 @@
+Version 1.0.13-hf1
+- Fixed issue #882 in MSAL
+
+Version 1.0.13
+------------
+- Resolving PoP backcompat issue.
+- Fixed issue #859 in MSAL
+
+Version 1.0.12
+------------
+- Refactored and improved ests telemetry flush call and telemetry caching logic.
+- Fixed ests telemetry memory leak.
+- Added null check for optional parameter prompt.
+- Added telemetry event in StorageHelper.
+- Fixed cloud url returning wrong url if authority specified in configuration.
+- Fixed issue #709 and #718
+- Fixed multiple cloud support in MSAL with Broker.
+- Enabled MSAL-Broker communication via AccountManager.
+
+Version 1.0.9-hf1
+------------
+- Hot fix release
+- Logging fixes.
+
+Version 1.0.9
+------------
+- Disable command caching.
+
+Version 1.0.8
+------------
+- Command caching and Throttling requests related changes.
+- Client Capabilities support related changes.
+- Server side telemetry changes.
+- Lock the cache during read/writes.
+- Fix to remove defaulting BadError on the ClientException in AdalResultAdapter.
+- Add IOException translation to AdalBrokerResultAdapter.
+- Fixes Telemetry thread issues and NullPointerExceptions.
+- Fix WebView SDK28 issue.
+- Refactor code to support FLW command migration
+- Get Correlation id from Operation parameters if available.
+- Fixed minor bugs as needed.
+- Added more robolectric tests.
+- Artifact for Broker 3.1.4 release.
+
+Version 1.0.7
+------------
+MSAL GA Artifact.
+
+Version 1.0.6
+-------------
+Fix Concurrent exception issue in Telemetry emit.
+
+Version 1.0.5
+-------------
+- Updated MSAL version in common to 1.0.0
+
+Version 1.0.4
+-------------
+- Artifact for MSAL GA
+- AndroidX changes included.
+
+Version 1.0.3
+-------------
+- Fix Null pointer on Authorixation Request builder.
+
+Version 1.0.0
+-------------
+- Broker V2 support with MSAL
+- TenantProfile support
+- FLW support
+- Multiple Bug Fixes.
+- Initial release with MSAL GA support.
+
+Version 0.0.20
+-------------
+Fix Ntlm challenge issue.
+
+Version 0.0.18
+-------------
+-BugFix : Complete the auth request as cancel if the activity is destroyed
+
+Version 0.0.17
+-------------
+- BugFix : Fix for foci lookup issue relative to migration
+- Add clearBrokerSecretKeys() to AuthenticationSettings.
+
+Version 0.0.15
+-------------
+- Bug Fix : Adding null safety check to avoid crash on EmbeddedWebViewStrategy
+
+Version 0.0.14
+-------------
+- Bug fix : Read user id from the request bundle for broker silent request.
+- Add shouldResolveInterrupt field to parameters.
+
+Version 0.0.12
+-------------
+- Broker V2 protocol support changes for v1 parity with ADAL.
+- Introduced new bound service IMicrosoftAuthService for MSAL.
+- Key Transfer changes from inactive broker
+- Introduced various adapters to translate betwewn broker request and responses.
+- Multiple bug fixes.
+
+Version 0.0.10
+-------------
+- Adds support HTTP response caching
+- Bugfixes:
+    * Pass claims in non-joined acquireTokenSilentCall
+    * Fixes the assertion check for IntuneAppProtectionPolicyRequiredException
+
+Version 0.0.10-alpha
+-------------
+- Adds support for declared non-tfp B2C authorities
+- Fix setting correct id token for B2C if v1 id token is returned
+- Fix incorrect parsing of not_before as Date
+- V2 Broker changes with MSAL (Alpha)
+
+Version 0.0.9
+-------------
+- Bugfix: Resolves COMMON/#379
+    * ClientInfo must implement Serializable so that ADAL/AuthenticationResult can be serialized.
+- AndroidX Interop:
+    * This release will not be code signed; Jetfier & AGP < 5.1.1 are failing to compile due to tooling bugs.
+    * For more information see:
+        - https://issuetracker.google.com/issues/115556774
+        - https://issuetracker.google.com/issues/119183822
+
+Version 0.0.8
+-------------
+- Bugfix: Resolves COMMON/#343
+    * Fix the discrepancy on idToken claim of Account object in v1.15.1.
+- Bugfix: Resolves MSAL/#517
+	* Fix the bug caused by fragment parameter when extracting the redirect url.
+
+Version 0.0.7
+-------------
+- Bugfix: Resolves MSAL/#418
+    * Adds client_id, redirect_uri to refresh token requests (previously missing, yielding inconsistent behavior depending on account type).
+
+Version 0.0.6
+-------------
+- Bugfix: Resolves MSAL/#420
+    * Corrects an issue whereby expired access tokens can be returned from the cache
+
+Version 0.0.5
+-------------
+Adding support for flight and slice parameters to authorization request.
+Updates for supporting authority aliasing
+Added new grant_type: refresh_token
+Updated authorization request base builder to include all MSAL public API properties
+Change from SignedJWT to JWT to support v1
+Internal class renaming for improved IntelliSense support
+Access token expiry calculation now supports ext_expires_on
+
+Version 0.0.4
+--------------
+Add authority AzureActiveDirectoryOAuth2 Configuration and Strategy for Sovereign and PPE cloud support.
+Fix for PPE Null Cloud when discovery metadata is malformed.
+
+Version 0.0.3
+--------------
+- First release: Hello, World!
+- Implementation of new unified cache schema
+    * Omits a read/deletion API, as not needed for initial release
+    * Ships with tests, unit + instrumented
+- Implementation of refactored ADAL 'classic' cache
+- Initial implementation of Strategy/Provider model for token acquisition
+    * Partially complete, work-in-progress
+- New Logger implementation
+    * Uses ThreadLocal mechanism to track correlationIds
+    * Supports logging arbitrary fields/JSON
+    * Separate methods for PII/OII logging
+- Initial Exception model implemented
+    * BaseException + Client & Service subclasses
+- Substantial portions of HTTP/S networking code migrated from ADAL & MSAL to this module
