@@ -23,9 +23,11 @@
 package com.microsoft.identity.common.internal.request;
 
 import android.app.Activity;
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.util.Pair;
+import androidx.fragment.app.Fragment;
 
 import com.google.gson.annotations.Expose;
 import com.microsoft.identity.common.internal.providers.oauth2.OpenIdConnectPromptParameter;
@@ -38,15 +40,32 @@ import java.util.List;
 public class AcquireTokenOperationParameters extends OperationParameters {
 
     private transient Activity mActivity;
+
+    private transient HashMap<String, String> mRequestHeaders;
+
+    private boolean mBrokerBrowserSupportEnabled;
+
+    private transient Fragment mFragment;
+
     private String mLoginHint;
+
+    @Expose()
+    private boolean webViewZoomControlsEnabled;
+
+    @Expose()
+    private boolean webViewZoomEnabled;
+
     @Expose()
     private List<Pair<String, String>> mExtraQueryStringParameters;
+
     @Expose()
     private List<String> mExtraScopesToConsent;
+
     @Expose()
     private OpenIdConnectPromptParameter mOpenIdConnectPromptParameter;
-    private transient HashMap<String, String> mRequestHeaders;
-    private boolean mBrokerBrowserSupportEnabled;
+
+    @Expose()
+    private AuthorizationAgent mAuthorizationAgent;
 
     public AuthorizationAgent getAuthorizationAgent() {
         return mAuthorizationAgent;
@@ -56,15 +75,20 @@ public class AcquireTokenOperationParameters extends OperationParameters {
         mAuthorizationAgent = authorizationAgent;
     }
 
-    @Expose()
-    private AuthorizationAgent mAuthorizationAgent;
-
     public Activity getActivity() {
         return mActivity;
     }
 
-    public void setActivity(@NonNull final Activity mActivity) {
-        this.mActivity = mActivity;
+    public void setActivity(@NonNull final Activity activity) {
+        this.mActivity = activity;
+    }
+
+    public Fragment getFragment() {
+        return mFragment;
+    }
+
+    public void setFragment(@NonNull final Fragment fragment) {
+        this.mFragment = fragment;
     }
 
     public List<Pair<String, String>> getExtraQueryStringParameters() {
@@ -119,8 +143,25 @@ public class AcquireTokenOperationParameters extends OperationParameters {
         this.mBrokerBrowserSupportEnabled = brokerBrowserSupportEnabled;
     }
 
+    public void setWebViewZoomControlsEnabled(boolean webViewZoomControlsEnabled) {
+        this.webViewZoomControlsEnabled = webViewZoomControlsEnabled;
+    }
+
+    public void setWebViewZoomEnabled(boolean webViewZoomEnabled) {
+        this.webViewZoomEnabled = webViewZoomEnabled;
+    }
+
+    public boolean isWebViewZoomEnabled() {
+        return webViewZoomEnabled;
+    }
+
+    public boolean isWebViewZoomControlsEnabled() {
+        return webViewZoomControlsEnabled;
+    }
+
     /**
      * Get the list of browsers which are safe to launch for auth flow.
+     *
      * @return list of browser descriptors
      */
     public List<BrowserDescriptor> getBrowserSafeList() {

@@ -27,7 +27,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.Gson;
 import com.microsoft.identity.common.adal.internal.AuthenticationConstants;
 import com.microsoft.identity.common.adal.internal.util.HashMapExtensions;
 import com.microsoft.identity.common.adal.internal.util.JsonExtensions;
@@ -54,6 +53,7 @@ import java.util.List;
 
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.Broker.BROKER_ACCOUNTS;
 import static com.microsoft.identity.common.adal.internal.AuthenticationConstants.Broker.BROKER_DEVICE_MODE;
+import static com.microsoft.identity.common.internal.request.MsalBrokerRequestAdapter.sRequestAdapterGsonInstance;
 
 public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
 
@@ -94,7 +94,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
         final Bundle resultBundle = new Bundle();
         resultBundle.putString(
                 AuthenticationConstants.Broker.BROKER_RESULT_V2,
-                new Gson().toJson(brokerResult, BrokerResult.class)
+                sRequestAdapterGsonInstance.toJson(brokerResult, BrokerResult.class)
         );
         resultBundle.putBoolean(AuthenticationConstants.Broker.BROKER_REQUEST_V2_SUCCESS, true);
 
@@ -109,6 +109,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
                 .success(false)
                 .errorCode(exception.getErrorCode())
                 .errorMessage(exception.getMessage())
+                .exceptionType(exception.getExceptionName())
                 .correlationId(exception.getCorrelationId())
                 .cliTelemErrorCode(exception.getCliTelemErrorCode())
                 .cliTelemSubErrorCode(exception.getCliTelemSubErrorCode())
@@ -122,7 +123,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
                             HeaderSerializationUtil.toJson((
                                     (ServiceException) exception).getHttpResponseHeaders()
                             ))
-                    .httpResponseBody(new Gson().toJson(
+                    .httpResponseBody(sRequestAdapterGsonInstance.toJson(
                             ((ServiceException) exception).getHttpResponseBody()));
         }
 
@@ -136,7 +137,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
         final Bundle resultBundle = new Bundle();
         resultBundle.putString(
                 AuthenticationConstants.Broker.BROKER_RESULT_V2,
-                new Gson().toJson(builder.build(), BrokerResult.class)
+                sRequestAdapterGsonInstance.toJson(builder.build(), BrokerResult.class)
         );
         resultBundle.putBoolean(AuthenticationConstants.Broker.BROKER_REQUEST_V2_SUCCESS, false);
 
@@ -145,7 +146,6 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
 
     @Override
     public ILocalAuthenticationResult authenticationResultFromBundle(@NonNull final Bundle resultBundle) {
-
         final BrokerResult brokerResult = JsonExtensions.getBrokerResultFromJsonString(
                 resultBundle.getString(AuthenticationConstants.Broker.BROKER_RESULT_V2)
         );
@@ -165,7 +165,6 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
         );
 
         return authenticationResult;
-
     }
 
     @Override
@@ -177,16 +176,101 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
         );
 
         if (brokerResult == null) {
-            Logger.error(TAG, "Broker Result not returned from Broker, ", null);
+            Logger.error(TAG, "Broker Result not returned from Broker", null);
             return new BaseException(ErrorStrings.UNKNOWN_ERROR, "Broker Result not returned from Broker");
         }
 
-        BaseException baseException;
+        final String exceptionType = brokerResult.getExceptionType();
 
+        if (!TextUtils.isEmpty(exceptionType)) {
+            return getBaseExceptionFromExceptionType(exceptionType, brokerResult);
+        } else {
+            // This code is here for legacy purposes where old versions of broker (3.1.8 or below)
+            // wouldn't return exception type in the result.
+            Logger.info(TAG, "Exception type is not returned from the broker, " +
+                    "using error codes to transform to the right exception");
+            return getBaseExceptionFromErrorCodes(brokerResult);
+        }
+
+    }
+
+    private BaseException getBaseExceptionFromExceptionType(@NonNull final String exceptionType,
+                                                            @NonNull final BrokerResult brokerResult) {
+        BaseException baseException = null;
+
+        Logger.warn(TAG, "Received a " + exceptionType + " from Broker : "
+                + brokerResult.getErrorCode()
+        );
+
+        if (exceptionType.equalsIgnoreCase(UiRequiredException.sName)) {
+            baseException = new UiRequiredException(
+                    brokerResult.getErrorCode(),
+                    brokerResult.getErrorMessage()
+            );
+        } else if (exceptionType.equalsIgnoreCase(ServiceException.sName)) {
+
+            baseException = getServiceException(brokerResult);
+
+        } else if (exceptionType.equalsIgnoreCase(IntuneAppProtectionPolicyRequiredException.sName)) {
+
+            baseException = getIntuneProtectionRequiredException(brokerResult);
+
+        } else if (exceptionType.equalsIgnoreCase(UserCancelException.sName)) {
+
+            baseException = new UserCancelException();
+
+        } else if (exceptionType.equalsIgnoreCase(ClientException.sName)) {
+
+            baseException = new ClientException(
+                    brokerResult.getErrorCode(),
+                    brokerResult.getErrorMessage()
+            );
+
+        } else if (exceptionType.equalsIgnoreCase(ArgumentException.sName)) {
+
+            baseException = new ArgumentException(
+                    ArgumentException.BROKER_TOKEN_REQUEST_OPERATION_NAME,
+                    brokerResult.getErrorCode(),
+                    brokerResult.getErrorMessage()
+            );
+
+        } else {
+            // Default to ClientException if null
+            Logger.warn(TAG, " Exception type is unknown : " + exceptionType
+                    + brokerResult.getErrorCode() + ", defaulting to Client Exception "
+            );
+            baseException = new ClientException(
+                    brokerResult.getErrorCode(),
+                    brokerResult.getErrorMessage()
+            );
+        }
+
+        baseException.setCliTelemErrorCode(brokerResult.getCliTelemErrorCode());
+        baseException.setCliTelemSubErrorCode(brokerResult.getCliTelemSubErrorCode());
+        baseException.setCorrelationId(brokerResult.getCorrelationId());
+        baseException.setSpeRing(brokerResult.getSpeRing());
+        baseException.setRefreshTokenAge(brokerResult.getRefreshTokenAge());
+
+        return baseException;
+    }
+
+
+    /**
+     * Method to get the right base exception based on error codes.
+     * Note : In newer versions of Broker, exception type will be sent and is used to determine the right exception.
+     * <p>
+     * This method is to support legacy broker versions (3.1.8 or below)
+     *
+     * @return BaseException
+     */
+    private BaseException getBaseExceptionFromErrorCodes(@NonNull final BrokerResult brokerResult) {
         final String errorCode = brokerResult.getErrorCode();
+        final BaseException baseException;
 
         if (AuthenticationConstants.OAuth2ErrorCode.INTERACTION_REQUIRED.equalsIgnoreCase(errorCode) ||
-                AuthenticationConstants.OAuth2ErrorCode.INVALID_GRANT.equalsIgnoreCase(errorCode)) {
+                AuthenticationConstants.OAuth2ErrorCode.INVALID_GRANT.equalsIgnoreCase(errorCode) ||
+                ErrorStrings.INVALID_BROKER_REFRESH_TOKEN.equalsIgnoreCase(errorCode) ||
+                ErrorStrings.NO_TOKENS_FOUND.equalsIgnoreCase(errorCode)) {
 
             Logger.warn(TAG, "Received a UIRequired exception from Broker : " + errorCode);
             baseException = new UiRequiredException(
@@ -213,7 +297,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
 
             Logger.warn(TAG, "Received a Argument exception from Broker : " + errorCode);
             baseException = new ArgumentException(
-                    ArgumentException.ACQUIRE_TOKEN_OPERATION_NAME,
+                    ArgumentException.BROKER_TOKEN_REQUEST_OPERATION_NAME,
                     errorCode,
                     brokerResult.getErrorMessage()
             );
@@ -306,11 +390,14 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
 
     }
 
-    public boolean getHelloFromResultBundle(final Bundle bundle) throws ClientException {
-        final String methodName = ":getHelloFromResultBundle";
+    public void verifyHelloFromResultBundle(final Bundle bundle) throws ClientException {
+        final String methodName = ":verifyHelloFromResultBundle";
+
+        // This means that the Broker doesn't support hello().
         if (bundle == null) {
             Logger.warn(TAG + methodName, "The hello result bundle is null.");
-            return false;
+            throw new ClientException(ErrorStrings.UNSUPPORTED_BROKER_VERSION_ERROR_CODE,
+                    ErrorStrings.UNSUPPORTED_BROKER_VERSION_ERROR_MESSAGE);
         }
 
         if (!StringUtil.isEmpty(bundle.getString(AuthenticationConstants.Broker.NEGOTIATED_BP_VERSION_KEY))) {
@@ -319,7 +406,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
                     "Able to establish the connect, " +
                             "the broker protocol version in common is ["
                             + negotiatedBrokerProtocolVersion + "]");
-            return true;
+            return;
         }
 
         if (!StringUtil.isEmpty(bundle.getString(AuthenticationConstants.OAuth2.ERROR))
@@ -336,7 +423,10 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
             throw new ClientException(brokerResult.getErrorCode(), brokerResult.getErrorMessage());
         }
 
-        return false;
+        // This means that the Broker doesn't support hello().
+        Logger.warn(TAG + methodName, "The result bundle is not in a recognizable format.");
+        throw new ClientException(ErrorStrings.UNSUPPORTED_BROKER_VERSION_ERROR_CODE,
+                ErrorStrings.UNSUPPORTED_BROKER_VERSION_ERROR_MESSAGE);
     }
 
     public AcquireTokenResult getAcquireTokenResultFromResultBundle(@NonNull final Bundle resultBundle) throws BaseException {
@@ -353,7 +443,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
         throw resultAdapter.getBaseExceptionFromBundle(resultBundle);
     }
 
-    public static Bundle bundleFromAccounts(@NonNull final List<ICacheRecord> cacheRecords) {
+    public Bundle bundleFromAccounts(@NonNull final List<ICacheRecord> cacheRecords) {
         final Bundle resultBundle = new Bundle();
 
         if (cacheRecords != null) {
@@ -398,7 +488,7 @@ public class MsalBrokerResultAdapter implements IBrokerResultAdapter {
     }
 
     public boolean getDeviceModeFromResultBundle(@NonNull final Bundle bundle) throws BaseException {
-        if (!bundle.containsKey(BROKER_DEVICE_MODE)){
+        if (!bundle.containsKey(BROKER_DEVICE_MODE)) {
             throw new MsalBrokerResultAdapter().getBaseExceptionFromBundle(bundle);
         }
 

@@ -3,8 +3,8 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
     <WebView
         android:id="@+id/common_auth_webview"
@@ -13,5 +13,13 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true" />
+
+    <ProgressBar
+        android:id="@+id/common_auth_webview_progressbar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminateTint="#0078D4"/>
 
 </RelativeLayout>

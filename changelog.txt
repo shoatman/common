@@ -1,10 +1,39 @@
+Version 2.0.2
+- Fix for MSAL #920, 924, 935, 940
+    * Crash due to error receiving CANCEL broadcast
+
+Version 2.0.1
+------------
+- Adds support for AT/PoP
+- Fix for common#823
+    * CANCEL_INTERACTIVE_REQUEST broadcast not working.
+
+Version 1.0.15
+------------
+- Fix for msal#915
+    * Incorrect id_token returned for B2C app with multiple policies
+- Fix for msal#916
+    * WebView calls loadUrl multiple times over lifecycle
+- Fix for msal#921
+    * WebView displays error when connectivity lost
+- Fix for msal#904
+    * AT caching logic change for scope intersection
+- MSAL Enhancement: WebView zoom controls are now configurable
+
+Version 1.0.14
+------------
+- Logging improvements.
+- Fixed issue #770.
+- Added Fragment support in WebView flow.
+
 Version 1.0.13-hf1
-- Fixed issue #882 in MSAL
+------------
+- Fixed issue #882 in MSAL.
 
 Version 1.0.13
 ------------
 - Resolving PoP backcompat issue.
-- Fixed issue #859 in MSAL
+- Fixed issue #859 in MSAL.
 
 Version 1.0.12
 ------------
@@ -13,13 +42,13 @@ Version 1.0.12
 - Added null check for optional parameter prompt.
 - Added telemetry event in StorageHelper.
 - Fixed cloud url returning wrong url if authority specified in configuration.
-- Fixed issue #709 and #718
+- Fixed issue #709 and #718.
 - Fixed multiple cloud support in MSAL with Broker.
 - Enabled MSAL-Broker communication via AccountManager.
 
 Version 1.0.9-hf1
 ------------
-- Hot fix release
+- Hot fix release.
 - Logging fixes.
 
 Version 1.0.9

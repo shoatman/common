@@ -24,6 +24,8 @@ package com.microsoft.identity.internal.testutils.strategies;
 
 import androidx.annotation.NonNull;
 
+import com.microsoft.identity.common.exception.ClientException;
+import com.microsoft.identity.common.internal.authscheme.AbstractAuthenticationScheme;
 import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.MicrosoftStsAuthorizationRequest;
 import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.MicrosoftStsAuthorizationResponse;
 import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.MicrosoftStsOAuth2Configuration;
@@ -31,18 +33,17 @@ import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.M
 import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.MicrosoftStsTokenRequest;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationResult;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationStrategy;
+import com.microsoft.identity.common.internal.providers.oauth2.OAuth2StrategyParameters;
 import com.microsoft.identity.common.internal.providers.oauth2.TokenRequest;
 import com.microsoft.identity.common.internal.result.ResultFuture;
 import com.microsoft.identity.common.internal.util.StringUtil;
 import com.microsoft.identity.internal.testutils.MicrosoftStsRopcTokenRequest;
-import com.microsoft.identity.internal.testutils.MockSuccessAuthorizationResultNetworkTests;
-import com.microsoft.identity.internal.testutils.labutils.CurrentLabConfig;
+import com.microsoft.identity.internal.testutils.labutils.LabConfig;
+import com.microsoft.identity.internal.testutils.mocks.MockSuccessAuthorizationResultNetworkTests;
 
 import java.util.concurrent.Future;
 
 public class ResourceOwnerPasswordCredentialsTestStrategy extends MicrosoftStsOAuth2Strategy {
-
-    private static final String TAG = ResourceOwnerPasswordCredentialsTestStrategy.class.getSimpleName();
 
     public static final String USERNAME_EMPTY_OR_NULL = "username_empty_or_null";
     public static final String PASSWORD_EMPTY_OR_NULL = "password_empty_or_null";
@@ -53,8 +54,8 @@ public class ResourceOwnerPasswordCredentialsTestStrategy extends MicrosoftStsOA
      *
      * @param config Microsoft Sts OAuth2 configuration
      */
-    public ResourceOwnerPasswordCredentialsTestStrategy(MicrosoftStsOAuth2Configuration config) {
-        super(config);
+    public ResourceOwnerPasswordCredentialsTestStrategy(final MicrosoftStsOAuth2Configuration config) {
+        super(config, new OAuth2StrategyParameters());
     }
 
     /**
@@ -75,7 +76,7 @@ public class ResourceOwnerPasswordCredentialsTestStrategy extends MicrosoftStsOA
     }
 
     @Override
-    protected void validateTokenRequest(MicrosoftStsTokenRequest request) {
+    protected void validateTokenRequest(final MicrosoftStsTokenRequest request) {
         if (StringUtil.isEmpty(request.getScope())) {
             throw new IllegalArgumentException(SCOPE_EMPTY_OR_NULL);
         }
@@ -85,12 +86,12 @@ public class ResourceOwnerPasswordCredentialsTestStrategy extends MicrosoftStsOA
         }
     }
 
-    private void validateTokenRequestForPasswordGrant(MicrosoftStsTokenRequest request) {
+    private void validateTokenRequestForPasswordGrant(final MicrosoftStsTokenRequest request) {
         if (!(request instanceof MicrosoftStsRopcTokenRequest)) {
             throw new IllegalArgumentException("Did you make sure to pass a MicrosoftStsRopcTokenRequest?");
         }
 
-        MicrosoftStsRopcTokenRequest ropcRequest = (MicrosoftStsRopcTokenRequest) request;
+        final MicrosoftStsRopcTokenRequest ropcRequest = (MicrosoftStsRopcTokenRequest) request;
 
         if (StringUtil.isEmpty(ropcRequest.getUsername())) {
             throw new IllegalArgumentException(USERNAME_EMPTY_OR_NULL);
@@ -102,13 +103,18 @@ public class ResourceOwnerPasswordCredentialsTestStrategy extends MicrosoftStsOA
     }
 
     String getPasswordForUser(String username) {
-        return CurrentLabConfig.labUserPassword;
+        return LabConfig.getCurrentLabConfig().getLabUserPassword();
     }
 
     @Override
     public MicrosoftStsTokenRequest createTokenRequest(@NonNull final MicrosoftStsAuthorizationRequest request,
-                                                       @NonNull final MicrosoftStsAuthorizationResponse response) {
-        MicrosoftStsTokenRequest tokenRequest = super.createTokenRequest(request, response);
+                                                       @NonNull final MicrosoftStsAuthorizationResponse response,
+                                                       @NonNull final AbstractAuthenticationScheme scheme) throws ClientException {
+        final MicrosoftStsTokenRequest tokenRequest = super.createTokenRequest(
+                request,
+                response,
+                scheme
+        );
 
         final MicrosoftStsRopcTokenRequest ropcTokenRequest = new MicrosoftStsRopcTokenRequest();
         ropcTokenRequest.setClientId(tokenRequest.getClientId());
