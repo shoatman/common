@@ -59,11 +59,15 @@ public class DefaultConnectionService implements IConnectionService {
      *
      * @return True if network connection available, false otherwise.
      */
+    @SuppressWarnings("deprecation")
     public boolean isConnectionAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) mConnectionContext
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
+        //TODO: https://github.com/AzureAD/microsoft-authentication-library-common-for-android/issues/847
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        final boolean isConnectionAvailable = activeNetwork != null && activeNetwork.isConnectedOrConnecting() && !isNetworkDisabledFromOptimizations();
+        final boolean isConnectionAvailable = activeNetwork != null
+                && activeNetwork.isConnectedOrConnecting()
+                && !isNetworkDisabledFromOptimizations();
         Telemetry.emit((BaseEvent) new BaseEvent().put(TelemetryEventStrings.Key.NETWORK_CONNECTION, String.valueOf(isConnectionAvailable)));
         return isConnectionAvailable;
     }

@@ -65,10 +65,12 @@ public class Browser {
      * {@link android.content.pm.PackageManager#GET_SIGNATURES GET_SIGNATURES} flag when
      * calling {@link android.content.pm.PackageManager#getPackageInfo(String, int)}.
      */
+    @SuppressWarnings("deprecation")
     public Browser(@NonNull PackageInfo packageInfo) {
         this(packageInfo.packageName, generateSignatureHashes(packageInfo.signatures), packageInfo.versionName, false);
     }
 
+    @SuppressWarnings("deprecation")
     public Browser(@NonNull PackageInfo packageInfo, final Boolean isCustomTabsServiceSupported) {
         this(packageInfo.packageName, generateSignatureHashes(packageInfo.signatures), packageInfo.versionName, isCustomTabsServiceSupported);
     }

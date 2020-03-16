@@ -201,6 +201,7 @@ public class ClientException extends BaseException {
      * Example: Client requests a PoP token, but a Bearer token is returned.
      */
     public static final String AUTH_SCHEME_MISMATCH = "auth_scheme_mismatch";
+    private static final long serialVersionUID = -2318746536590284648L;
 
     /**
      * Constructor of ClientException.

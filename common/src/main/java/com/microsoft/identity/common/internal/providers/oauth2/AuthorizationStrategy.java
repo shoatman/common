@@ -42,8 +42,8 @@ import java.util.concurrent.Future;
  * and/or authentication information (OIDC)
  * Possible implementations include: EmbeddedWebViewAuthorizationStrategy, SystemWebViewAuthorizationStrategy, Device Code, etc...
  */
-public abstract class AuthorizationStrategy<GenericOAuth2Strategy extends OAuth2Strategy,
-        GenericAuthorizationRequest extends AuthorizationRequest> {
+public abstract class AuthorizationStrategy<GenericOAuth2Strategy extends OAuth2Strategy<?,?,?,?,?,?,?,?,?,?,?,?,?>,
+        GenericAuthorizationRequest extends AuthorizationRequest<?>> {
     private WeakReference<Context> mReferencedApplicationContext;
     private WeakReference<Activity> mReferencedActivity;
     private WeakReference<Fragment> mReferencedFragment;
@@ -87,7 +87,7 @@ public abstract class AuthorizationStrategy<GenericOAuth2Strategy extends OAuth2
     /**
      * Perform the authorization request.
      */
-    public abstract Future<AuthorizationResult> requestAuthorization(GenericAuthorizationRequest authorizationRequest,
+    public abstract Future<AuthorizationResult<AuthorizationResponse, AuthorizationErrorResponse>> requestAuthorization(GenericAuthorizationRequest authorizationRequest,
                                                                      GenericOAuth2Strategy oAuth2Strategy)
             throws ClientException, UnsupportedEncodingException;
 

@@ -664,29 +664,6 @@ public enum ADALError {
         return mDescription;
     }
 
-
-    /**
-     * Gets localized description if provided with context.
-     *
-     * @param context {@link Context}
-     * @return Error description
-     */
-    public String getLocalizedDescription(Context context) {
-        // Optional overwrite to error descriptions from resource files.
-        // Application can repeat the resource entries from libraries.
-        // Application resource
-        // merging operation will use the last one according to the import
-        // order.
-        if (context != null) {
-            Configuration conf = context.getResources().getConfiguration();
-            Resources resources = new Resources(context.getAssets(), context.getResources()
-                    .getDisplayMetrics(), conf);
-            return resources.getString(resources.getIdentifier(this.name(), "string",
-                    context.getPackageName()));
-        }
-        return mDescription;
-    }
-
     private static final Map<String, ADALError> exceptionMap = new HashMap<String,ADALError>();
 
     static {

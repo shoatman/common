@@ -114,7 +114,8 @@ public abstract class MicrosoftAuthorizationRequest<T extends MicrosoftAuthoriza
     /**
      * Constructor of MicrosoftAuthorizationRequest.
      */
-    protected MicrosoftAuthorizationRequest(final Builder builder) {
+    @SuppressWarnings("deprecation")
+    protected MicrosoftAuthorizationRequest(final Builder<?> builder) {
         super(builder);
         mAuthority = builder.mAuthority;
         mLoginHint = builder.mLoginHint;

@@ -66,7 +66,7 @@ public class AzureActiveDirectoryOAuth2Strategy
         AzureActiveDirectoryAccount,
         AzureActiveDirectoryAuthorizationRequest,
         AzureActiveDirectoryAuthorizationRequest.Builder,
-        AuthorizationStrategy,
+        AuthorizationStrategy<?,?>,
         AzureActiveDirectoryOAuth2Configuration,
         OAuth2StrategyParameters,
         AzureActiveDirectoryAuthorizationResponse,
@@ -74,7 +74,7 @@ public class AzureActiveDirectoryOAuth2Strategy
         AzureActiveDirectoryTokenRequest,
         AzureActiveDirectoryTokenResponse,
         TokenResult,
-        AuthorizationResult> {
+        AuthorizationResult<?,?>> {
 
     private static final String TAG = AzureActiveDirectoryOAuth2Strategy.class.getSimpleName();
 
@@ -95,7 +95,7 @@ public class AzureActiveDirectoryOAuth2Strategy
     }
 
     @Override
-    public AuthorizationResultFactory getAuthorizationResultFactory() {
+    public AuthorizationResultFactory<?,?> getAuthorizationResultFactory() {
         throw new UnsupportedOperationException();
     }
 

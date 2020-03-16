@@ -72,7 +72,7 @@ public class AzureActiveDirectoryB2CAuthority extends Authority {
     }
 
     @Override
-    public OAuth2Strategy createOAuth2Strategy(@NonNull final OAuth2StrategyParameters parameters)
+    public OAuth2Strategy<?,?,?,?,?,?,?,?,?,?,?,?,?> createOAuth2Strategy(@NonNull final OAuth2StrategyParameters parameters)
             throws ClientException {
         MicrosoftStsOAuth2Configuration config = createOAuth2Configuration();
         return new MicrosoftStsOAuth2Strategy(config, parameters);

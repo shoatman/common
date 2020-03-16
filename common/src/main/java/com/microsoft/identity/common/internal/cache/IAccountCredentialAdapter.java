@@ -35,7 +35,7 @@ import com.microsoft.identity.common.internal.providers.oauth2.TokenResponse;
  * Provides Adapters to the MsalOAuth2TokenCache.
  */
 public interface IAccountCredentialAdapter
-        <T extends OAuth2Strategy,
+        <T extends OAuth2Strategy<?,?,?,?,?,?,?,?,?,?,?,?,?>,
                 U extends AuthorizationRequest,
                 V extends TokenResponse,
                 W extends BaseAccount,

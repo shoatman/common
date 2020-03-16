@@ -125,7 +125,9 @@ public final class ObjectMapper {
      */
     public static Map<String, Object> serializeObjectHashMap(final Object object) {
         String json = ObjectMapper.serializeObjectToJsonString(object);
-        return new Gson().fromJson(json, Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> returnMap = new Gson().fromJson(json, Map.class);
+        return returnMap;
     }
 
 

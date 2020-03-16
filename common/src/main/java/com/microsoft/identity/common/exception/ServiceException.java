@@ -82,6 +82,7 @@ public class ServiceException extends BaseException {
      * service.
      */
     public static final String UNKNOWN_ERROR = "unknown_error";
+    private static final long serialVersionUID = 5139563940871615046L;
 
     private String mOauthSubErrorCode;
 

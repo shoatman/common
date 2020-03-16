@@ -41,7 +41,7 @@ import java.util.UUID;
  * This should include all fo the required parameters of the authorization request for oAuth2
  * This should provide an extension point for additional parameters to be set
  */
-public abstract class AuthorizationRequest<T extends AuthorizationRequest<T>> implements Serializable {
+public abstract class AuthorizationRequest<T extends AuthorizationRequest<?>> implements Serializable {
     /**
      * Serial version id.
      */
@@ -111,12 +111,12 @@ public abstract class AuthorizationRequest<T extends AuthorizationRequest<T>> im
      */
     private transient HashMap<String, String> mRequestHeaders;
 
-    private transient List<Pair<String, String>> mExtraQueryParams;
+    private transient List<android.util.Pair<String, String>> mExtraQueryParams;
 
     /**
      * Constructor of AuthorizationRequest.
      */
-    protected AuthorizationRequest(final Builder builder) {
+    protected AuthorizationRequest(final Builder<?> builder) {
         mResponseType = builder.mResponseType;
         mClientId = builder.mClientId;
         mRedirectUri = builder.mRedirectUri;
@@ -157,7 +157,7 @@ public abstract class AuthorizationRequest<T extends AuthorizationRequest<T>> im
         /**
          * Extra query parameters.
          */
-        public List<Pair<String, String>> mExtraQueryParams;
+        public List<android.util.Pair<String, String>> mExtraQueryParams;
 
         public String mPrompt;
 
@@ -228,7 +228,7 @@ public abstract class AuthorizationRequest<T extends AuthorizationRequest<T>> im
 
         public abstract B self();
 
-        public abstract AuthorizationRequest build();
+        public abstract AuthorizationRequest<?> build();
 
     }
 //

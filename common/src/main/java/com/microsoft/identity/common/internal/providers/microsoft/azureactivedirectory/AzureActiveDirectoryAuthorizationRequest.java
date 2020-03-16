@@ -24,8 +24,10 @@ package com.microsoft.identity.common.internal.providers.microsoft.azureactivedi
 
 import com.google.gson.annotations.SerializedName;
 import com.microsoft.identity.common.internal.providers.microsoft.MicrosoftAuthorizationRequest;
+import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationRequest;
 
-public class AzureActiveDirectoryAuthorizationRequest extends MicrosoftAuthorizationRequest {
+public class AzureActiveDirectoryAuthorizationRequest extends MicrosoftAuthorizationRequest<AzureActiveDirectoryAuthorizationRequest> {
+    private static final long serialVersionUID = 6813760067123426470L;
     /**
      * The App ID URI of the target web API.
      * This is required in one of either the authorization or token requests.

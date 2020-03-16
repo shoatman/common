@@ -23,10 +23,12 @@
 package com.microsoft.identity.common.internal.controllers;
 
 import android.content.Intent;
+import android.media.session.MediaSession;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.microsoft.identity.common.BaseAccount;
 import com.microsoft.identity.common.adal.internal.AuthenticationConstants;
 import com.microsoft.identity.common.adal.internal.net.HttpWebRequest;
 import com.microsoft.identity.common.adal.internal.util.StringExtensions;
@@ -50,13 +52,19 @@ import com.microsoft.identity.common.internal.providers.microsoft.MicrosoftAutho
 import com.microsoft.identity.common.internal.providers.microsoft.MicrosoftTokenRequest;
 import com.microsoft.identity.common.internal.providers.microsoft.MicrosoftTokenResponse;
 import com.microsoft.identity.common.internal.providers.microsoft.microsoftsts.MicrosoftStsAuthorizationRequest;
+import com.microsoft.identity.common.internal.providers.oauth2.AccessToken;
+import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationErrorResponse;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationRequest;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationResponse;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationResult;
+import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationStrategy;
 import com.microsoft.identity.common.internal.providers.oauth2.IResult;
+import com.microsoft.identity.common.internal.providers.oauth2.OAuth2Configuration;
 import com.microsoft.identity.common.internal.providers.oauth2.OAuth2Strategy;
+import com.microsoft.identity.common.internal.providers.oauth2.OAuth2StrategyParameters;
 import com.microsoft.identity.common.internal.providers.oauth2.OAuth2TokenCache;
 import com.microsoft.identity.common.internal.providers.oauth2.OpenIdConnectPromptParameter;
+import com.microsoft.identity.common.internal.providers.oauth2.RefreshToken;
 import com.microsoft.identity.common.internal.providers.oauth2.TokenRequest;
 import com.microsoft.identity.common.internal.providers.oauth2.TokenResponse;
 import com.microsoft.identity.common.internal.providers.oauth2.TokenResult;
@@ -123,7 +131,7 @@ public abstract class BaseController {
     /**
      * Pre-filled ALL the fields in AuthorizationRequest.Builder
      */
-    protected final AuthorizationRequest.Builder initializeAuthorizationRequestBuilder(@NonNull final AuthorizationRequest.Builder builder,
+    protected final AuthorizationRequest.Builder<?> initializeAuthorizationRequestBuilder(@NonNull final AuthorizationRequest.Builder<?> builder,
                                                                                        @NonNull final OperationParameters parameters) {
         UUID correlationId = null;
 
@@ -187,15 +195,41 @@ public abstract class BaseController {
         return builder;
     }
 
-    protected AuthorizationRequest getAuthorizationRequest(@NonNull final OAuth2Strategy strategy,
+    protected AuthorizationRequest<?> getAuthorizationRequest(@NonNull final OAuth2Strategy<AccessToken,
+                                                                                        BaseAccount,
+                                                                                        AuthorizationRequest<?>,
+                                                                                        AuthorizationRequest.Builder<?>,
+                                                                                        AuthorizationStrategy<?, ?>,
+                                                                                        OAuth2Configuration,
+                                                                                        OAuth2StrategyParameters,
+                                                                                        AuthorizationResponse,
+                                                                                        RefreshToken,
+                                                                                        TokenRequest,
+                                                                                        TokenResponse,
+                                                                                        TokenResult,
+                                                                                        AuthorizationResult<?,?>
+                                                                                        > strategy,
                                                            @NonNull final OperationParameters parameters) {
-        final AuthorizationRequest.Builder builder = strategy.createAuthorizationRequestBuilder(parameters.getAccount());
+        final AuthorizationRequest.Builder<?> builder = strategy.createAuthorizationRequestBuilder(parameters.getAccount());
         initializeAuthorizationRequestBuilder(builder, parameters);
         return builder.build();
     }
 
-    protected TokenResult performTokenRequest(@NonNull final OAuth2Strategy strategy,
-                                              @NonNull final AuthorizationRequest request,
+    protected TokenResult performTokenRequest(@NonNull final OAuth2Strategy<AccessToken,
+                                                                            BaseAccount,
+                                                                            AuthorizationRequest<?>,
+                                                                            AuthorizationRequest.Builder<?>,
+                                                                            AuthorizationStrategy<?, ?>,
+                                                                            OAuth2Configuration,
+                                                                            OAuth2StrategyParameters,
+                                                                            AuthorizationResponse,
+                                                                            RefreshToken,
+                                                                            TokenRequest,
+                                                                            TokenResponse,
+                                                                            TokenResult,
+                                                                            AuthorizationResult<?,?>
+                                                                            > strategy,
+                                              @NonNull final AuthorizationRequest<?> request,
                                               @NonNull final AuthorizationResponse response,
                                               @NonNull final AcquireTokenOperationParameters parameters)
             throws IOException, ClientException {
@@ -218,8 +252,34 @@ public abstract class BaseController {
 
     protected void renewAccessToken(@NonNull final AcquireTokenSilentOperationParameters parameters,
                                     @NonNull final AcquireTokenResult acquireTokenSilentResult,
-                                    @NonNull final OAuth2TokenCache tokenCache,
-                                    @NonNull final OAuth2Strategy strategy,
+                                    @NonNull final OAuth2TokenCache<OAuth2Strategy<AccessToken,
+                                                                    BaseAccount,
+                                                                    AuthorizationRequest<?>,
+                                                                    AuthorizationRequest.Builder<?>,
+                                                                    AuthorizationStrategy<?, ?>,
+                                                                    OAuth2Configuration,
+                                                                    OAuth2StrategyParameters,
+                                                                    AuthorizationResponse,
+                                                                    RefreshToken,
+                                                                    TokenRequest,
+                                                                    TokenResponse,
+                                                                    TokenResult,
+                                                                    AuthorizationResult<?,?>>
+                                            ,AuthorizationRequest<?>, TokenResponse> tokenCache,
+                                    @NonNull final OAuth2Strategy<AccessToken,
+                                                                    BaseAccount,
+                                                                    AuthorizationRequest<?>,
+                                                                    AuthorizationRequest.Builder<?>,
+                                                                    AuthorizationStrategy<?, ?>,
+                                                                    OAuth2Configuration,
+                                                                    OAuth2StrategyParameters,
+                                                                    AuthorizationResponse,
+                                                                    RefreshToken,
+                                                                    TokenRequest,
+                                                                    TokenResponse,
+                                                                    TokenResult,
+                                                                    AuthorizationResult<?,?>
+                                                                    > strategy,
                                     @NonNull final ICacheRecord cacheRecord)
             throws IOException, ClientException {
         final String methodName = ":renewAccessToken";
@@ -315,7 +375,8 @@ public abstract class BaseController {
         }
 
         if (result instanceof AuthorizationResult) {
-            AuthorizationResult authResult = (AuthorizationResult) result;
+            @SuppressWarnings("unchecked")
+            AuthorizationResult<AuthorizationResponse, AuthorizationErrorResponse> authResult = (AuthorizationResult<AuthorizationResponse, AuthorizationErrorResponse>) result;
 
             if (authResult.getAuthorizationStatus() != null) {
                 Logger.info(
@@ -349,7 +410,20 @@ public abstract class BaseController {
     }
 
     protected TokenResult performSilentTokenRequest(
-            @NonNull final OAuth2Strategy strategy,
+            @NonNull final OAuth2Strategy<AccessToken,
+                    BaseAccount,
+                    AuthorizationRequest<?>,
+                    AuthorizationRequest.Builder<?>,
+                    AuthorizationStrategy<?, ?>,
+                    OAuth2Configuration,
+                    OAuth2StrategyParameters,
+                    AuthorizationResponse,
+                    RefreshToken,
+                    TokenRequest,
+                    TokenResponse,
+                    TokenResult,
+                    AuthorizationResult<?,?>
+                    > strategy,
             @NonNull final AcquireTokenSilentOperationParameters parameters)
             throws ClientException, IOException {
         final String methodName = ":performSilentTokenRequest";
@@ -400,10 +474,35 @@ public abstract class BaseController {
         return strategy.requestToken(refreshTokenRequest);
     }
 
-    protected List<ICacheRecord> saveTokens(@NonNull final OAuth2Strategy strategy,
-                                            @NonNull final AuthorizationRequest request,
+    protected List<ICacheRecord> saveTokens(@NonNull final OAuth2Strategy<AccessToken,
+                                                        BaseAccount,
+                                                        AuthorizationRequest<?>,
+                                                        AuthorizationRequest.Builder<?>,
+                                                        AuthorizationStrategy<?, ?>,
+                                                        OAuth2Configuration,
+                                                        OAuth2StrategyParameters,
+                                                        AuthorizationResponse,
+                                                        RefreshToken,
+                                                        TokenRequest,
+                                                        TokenResponse,
+                                                        TokenResult,
+                                                        AuthorizationResult<?,?>
+                                                        > strategy,
+                                            @NonNull final AuthorizationRequest<?> request,
                                             @NonNull final TokenResponse tokenResponse,
-                                            @NonNull final OAuth2TokenCache tokenCache) throws ClientException {
+                                            @NonNull final OAuth2TokenCache<OAuth2Strategy<AccessToken,
+                                                    BaseAccount,
+                                                    AuthorizationRequest<?>,
+                                                    AuthorizationRequest.Builder<?>,
+                                                    AuthorizationStrategy<?, ?>,
+                                                    OAuth2Configuration,
+                                                    OAuth2StrategyParameters,
+                                                    AuthorizationResponse,
+                                                    RefreshToken,
+                                                    TokenRequest,
+                                                    TokenResponse,
+                                                    TokenResult,
+                                                    AuthorizationResult<?,?>>,AuthorizationRequest<?>,TokenResponse> tokenCache) throws ClientException {
         final String methodName = ":saveTokens";
 
         Logger.info(

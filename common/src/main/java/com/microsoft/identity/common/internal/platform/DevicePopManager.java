@@ -25,7 +25,6 @@ package com.microsoft.identity.common.internal.platform;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
-import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyInfo;
 import android.security.keystore.KeyProperties;
@@ -701,7 +700,8 @@ class DevicePopManager implements IDevicePopManager {
         calendar.add(Calendar.YEAR, CertificateProperties.CERTIFICATE_VALIDITY_YEARS);
         final Date end = calendar.getTime();
 
-        final KeyPairGeneratorSpec.Builder specBuilder = new KeyPairGeneratorSpec.Builder(context)
+        @SuppressWarnings("deprecation")
+        final android.security.KeyPairGeneratorSpec.Builder specBuilder = new android.security.KeyPairGeneratorSpec.Builder(context)
                 .setAlias(KEYSTORE_ENTRY_ALIAS)
                 .setStartDate(start)
                 .setEndDate(end)
@@ -714,7 +714,8 @@ class DevicePopManager implements IDevicePopManager {
             );
         }
 
-        final KeyPairGeneratorSpec spec = specBuilder.build();
+        @SuppressWarnings("deprecation")
+        final android.security.KeyPairGeneratorSpec spec = specBuilder.build();
         keyPairGenerator.initialize(spec);
     }
 

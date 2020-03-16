@@ -36,6 +36,7 @@ public class ArgumentException extends BaseException {
     public final static String AUTHENTICATION_SCHEME_ARGUMENT_NAME = "authentication_scheme";
 
     public final static String ILLEGAL_ARGUMENT_ERROR_CODE = "illegal_argument_exception";
+    private static final long serialVersionUID = -6399451133831073876L;
 
     private String mOperationName;
     private String mArgumentName;

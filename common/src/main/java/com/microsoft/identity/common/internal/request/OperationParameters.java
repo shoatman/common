@@ -45,7 +45,7 @@ public class OperationParameters {
     private static final String TAG = OperationParameters.class.getSimpleName();
 
     private transient Context mAppContext;
-    private transient OAuth2TokenCache mTokenCache;
+    private transient OAuth2TokenCache<?,?,?> mTokenCache;
     private transient boolean mIsSharedDevice;
     protected transient List<BrowserDescriptor> mBrowserSafeList;
 
@@ -146,11 +146,11 @@ public class OperationParameters {
         this.redirectUri = redirectUri;
     }
 
-    public void setTokenCache(@NonNull final OAuth2TokenCache cache) {
+    public void setTokenCache(@NonNull final OAuth2TokenCache<?,?,?> cache) {
         this.mTokenCache = cache;
     }
 
-    public OAuth2TokenCache getTokenCache() {
+    public OAuth2TokenCache<?,?,?> getTokenCache() {
         return mTokenCache;
     }
 

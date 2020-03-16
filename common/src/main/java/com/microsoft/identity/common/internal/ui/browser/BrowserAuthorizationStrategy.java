@@ -35,7 +35,9 @@ import com.microsoft.identity.common.adal.internal.AuthenticationConstants;
 import com.microsoft.identity.common.exception.ClientException;
 import com.microsoft.identity.common.internal.logging.Logger;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationActivity;
+import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationErrorResponse;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationRequest;
+import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationResponse;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationResult;
 import com.microsoft.identity.common.internal.providers.oauth2.AuthorizationStrategy;
 import com.microsoft.identity.common.internal.providers.oauth2.OAuth2Strategy;
@@ -46,12 +48,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.concurrent.Future;
 
-public class BrowserAuthorizationStrategy<GenericOAuth2Strategy extends OAuth2Strategy,
+public class BrowserAuthorizationStrategy<GenericOAuth2Strategy extends OAuth2Strategy<?,?,?,?,?,?,?,?,?,?,?,?,?>,
         GenericAuthorizationRequest extends AuthorizationRequest> extends AuthorizationStrategy<GenericOAuth2Strategy, GenericAuthorizationRequest> {
     private final static String TAG = BrowserAuthorizationStrategy.class.getSimpleName();
 
     private CustomTabsManager mCustomTabManager;
-    private ResultFuture<AuthorizationResult> mAuthorizationResultFuture;
+    private ResultFuture<AuthorizationResult<AuthorizationResponse,AuthorizationErrorResponse>> mAuthorizationResultFuture;
     private List<BrowserDescriptor> mBrowserSafeList;
     private boolean mDisposed;
     private GenericOAuth2Strategy mOAuth2Strategy; //NOPMD
@@ -71,7 +73,7 @@ public class BrowserAuthorizationStrategy<GenericOAuth2Strategy extends OAuth2St
     }
 
     @Override
-    public Future<AuthorizationResult> requestAuthorization(
+    public Future<AuthorizationResult<AuthorizationResponse, AuthorizationErrorResponse>> requestAuthorization(
             GenericAuthorizationRequest authorizationRequest,
             GenericOAuth2Strategy oAuth2Strategy)
             throws ClientException, UnsupportedEncodingException {

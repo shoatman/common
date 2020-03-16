@@ -65,6 +65,7 @@ public class PackageHelper {
      * @return signature for package
      */
     @SuppressLint("PackageManagerGetSignatures")
+    @SuppressWarnings("deprecation")
     public String getCurrentSignatureForPackage(final String packageName) {
         try {
             PackageInfo info = mPackageManager.getPackageInfo(packageName,

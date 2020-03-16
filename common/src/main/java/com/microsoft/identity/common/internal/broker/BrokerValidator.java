@@ -155,6 +155,7 @@ public class BrokerValidator {
     }
 
     @SuppressLint("PackageManagerGetSignatures")
+    @SuppressWarnings("deprecation")
     private List<X509Certificate> readCertDataForBrokerApp(final String brokerPackageName)
             throws NameNotFoundException, ClientException, IOException,
             GeneralSecurityException {

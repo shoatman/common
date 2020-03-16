@@ -47,6 +47,7 @@ public final class Device {
     private Device() {
     }
 
+    @SuppressWarnings("deprecation")
     public static Map<String, String> getPlatformIdParameters() {
         final Map<String, String> platformParameters = new HashMap<>();
 
